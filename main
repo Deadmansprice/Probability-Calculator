@@ -1,0 +1,45 @@
+import random
+import copy
+
+class Hat:
+    def __init__(self, **balls):
+        self.contents = [] #Empty list for hat contents.
+        for colour, number in balls.items(): #For each colour & corresponding number, extended to above list.
+            self.contents.extend([colour] * number)
+
+    #Simulates drawing a number of balls from the hat
+    def draw(self, number):
+        number = min(number, len(self.contents)) #Prevents drawing more balls than possible in hat
+        return [self.contents.pop(random.randrange(len(self.contents))) for _ in range(number)] #Randomly removes and returns specific no of balls from contents
+
+def experiment(hat, expected_balls, num_balls_drawn, num_experiments):
+        M = 0 #Initial success counter
+
+        #Loop through the no. of experiments
+        for _ in range(num_experiments):
+            #create a deep copy of the hat object (without affecting original hat objects).
+            hat_copy = copy.deepcopy(hat)
+
+            #draw specific no of balls from hat copy.
+            drawn_balls = hat_copy.draw(num_balls_drawn)
+
+            #convert the list of drawn balls into freq dict.
+            drawn_balls_freq = {colour: drawn_balls.count(colour) for colour in set(drawn_balls)}
+
+            #check if the drawn balls meet criteria
+            success = all(drawn_balls_freq.get(colour, 0) >= count for colour, count in expected_balls.items())
+
+            #if the criteria are met, increment success counter
+            if success:
+                M+= 1
+
+        probability = M / num_experiments
+        return probability
+
+hat = Hat(black=6, red=4, green=3)
+probability = experiment(hat=hat,
+                  expected_balls={"red":2,"green":1},
+                  num_balls_drawn=5,
+                  num_experiments=2000)
+
+print(probability)
